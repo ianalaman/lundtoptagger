@@ -138,7 +138,8 @@ def main():
     device = torch.device('cuda') # Usually gpu 4 worked best, it had the most memory available
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-
+    optimizer2 = torch.optim.Adam(model.parameters(), lr=4*learning_rate)
+    optimizer3 = torch.optim.Adam(model.parameters(), lr=10*learning_rate)
 
     train_jds = []
     val_jds = []
@@ -157,7 +158,8 @@ def main():
 
     for epoch in range(n_epochs):
         # print("Epoch:{}".format(epoch+1))
-        train_loss.append(train(train_loader, model, device, optimizer))
+        #train_loss.append(train(train_loader, model, device, optimizer))
+        train_loss.append(train_clas(train_loader, model, device, optimizer, optimizer2, optimizer3, epoch))
     #    print ("Train Loss:",train_loss[-1])
     #    delta_t_fileax = time.time() - t_start
     #    print("trained epoch in {:.4f} seconds.".format(delta_t_fileax))

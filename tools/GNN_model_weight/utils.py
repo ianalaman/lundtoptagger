@@ -50,21 +50,33 @@ flatweights_sig = weights_file["h_sig_inv"].to_numpy()
 
 def GetPtWeight( dsid , pt, SF):
 
-    length_sig = len(flatweights_bg[0])
-    length_bkg = len(flatweights_bg[0])
-    scale_factor = 14.475606
+    flatweights_sig[0][9] = flatweights_sig[0][13]
+    flatweights_sig[0][10] = flatweights_sig[0][13] 
+    flatweights_sig[0][11] = flatweights_sig[0][13]
+    flatweights_sig[0][12] = flatweights_sig[0][13] 
+
+    flatweights_bg[0][8] = flatweights_bg[0][12]
+    flatweights_bg[0][9] = flatweights_bg[0][12] 
+    flatweights_bg[0][10] = flatweights_bg[0][12]
+    flatweights_bg[0][11] = flatweights_bg[0][12]
+    
+    
+    lenght_sig = len(flatweights_bg[0])
+    lenght_bkg = len(flatweights_bg[0])
+    scale_factor = 1
     weight_out = []
+    
     for i in range ( 0,len(dsid) ):
-        pt_bin = int( (pt[i]/3000)*length_sig )
-        if pt_bin==length_sig :
-            pt_bin = length_sig-1
+        pt_bin = int( ((pt[i]-200)/3000)*lenght_sig )
+        if pt_bin==lenght_sig :
+            pt_bin = lenght_sig-1
         if dsid[i] < 370000 :
-            weight_out.append( (flatweights_bg[0][pt_bin]*scale_factor)*10**4 ) ## used for W tagging
-            # weight_out.append( (flatweights_bg[0][pt_bin])*10**(-1) )
+            #weight_out.append( (flatweights_bg[0][pt_bin]*scale_factor)*10**4 ) ## used for W tagging
+            weight_out.append( (flatweights_bg[0][pt_bin])*1 )
             # weight_out.append( (flatweights_bg[0][pt_bin]*scale_factor)*10**(-1) )
         if dsid[i] > 370000 :
-            weight_out.append( (flatweights_sig[0][pt_bin])*10**4 ) ## used for W tagging
-            # weight_out.append( (flatweights_sig[0][pt_bin])*10**(-1) )
+            #weight_out.append( (flatweights_sig[0][pt_bin])*10**4 ) ## used for W tagging
+            weight_out.append( (flatweights_sig[0][pt_bin])*1 )
     return np.array(weight_out)
 
 
@@ -281,37 +293,49 @@ def create_dataset_test(graphs, z, k, d, edge1, edge2, labelss, Ntracks, jet_pts
     return graphs
 
 
-def create_train_dataset_fulld_new_Ntrk_pt_weight_file(graphs, z, k, d, edge1, edge2, weight, label, Ntracks, jet_pts, jet_ms):
 
+def create_train_dataset_fulld_new_Ntrk_pt_weight_file(graphs, z, k, d, edge1, edge2, weight, label, Ntracks, jet_pts, jet_ms):
     for i in range(len(z)):
         # if i>2: continue
-        k[i][k[i] == 0] = 1e-10
-        d[i][d[i] == 0] = 1e-10
-
+        
+        #k[i][k[i] == 0] = 1e-10
+        #d[i][d[i] == 0] = 1e-10
+        
+        z[i] += 1e-7
+        k[i] += 1e-7
+        d[i] += 1e-7
+        
         z[i] = np.log(1/z[i])
         k[i] = np.log(k[i])
         d[i] = np.log(1/d[i])
-
-        ## cut lund plane where effects are the same
-        # indices = np.argwhere(k[i]<2.7)
-
-        # z[i] = np.delete(z[i], indices)
-        # k[i] = np.delete(k[i], indices)
-        # d[i] = np.delete(d[i], indices)
-        # edge1[i] = np.delete(edge1[i], indices)
-        # edge2[i] = np.delete(edge2[i], indices)
-
+        
+        '''
+        #Jad weights
         mean_z, std_z = 2.523076295852661, 5.264721870422363
         mean_dr, std_dr = 11.381295204162598, 13.63073444366455
         mean_kt, std_kt = -10.042571067810059, 15.398056030273438
         mean_ntrks, std_ntrks = 33.35614197897151, 12.064001858459823
-
-
+        '''
+        mean_z, std_z = 2.1212295107646684, 2.0132512522977346
+        mean_dr, std_dr = 6.872297191581289, 6.109722726160649
+        mean_kt, std_kt = -5.367505330860997, 7.172331060648966
+        mean_ntrks, std_ntrks = 35.80012907092822, 11.740907468153635
+        #'''
+        
         z[i] = (z[i] - mean_z) / std_z
         k[i] = (k[i] - mean_kt) / std_kt
         d[i] = (d[i] - mean_dr) / std_dr
-        Ntracks = (Ntracks - mean_ntrks) / std_ntrks
-
+        #Ntracks = (Ntracks - mean_ntrks) / std_ntrks
+        Ntrk = (Ntracks[i] - mean_ntrks) / std_ntrks
+        
+        ## in case we have crazy values
+        #print("z: max->",np.max(z[i])," min->",np.min(z[i]) )
+        #print("k: max->",np.max(k[i])," min->",np.min(k[i]) )
+        #print("d: max->",np.max(d[i])," min->",np.min(d[i]) )
+        #print("Ntracks: ",Ntracks )
+        #print("Ntracks: ",Ntracks[i] )
+        #print("Ntrk: ",Ntrk )
+        
 
         if (len(edge1[i])== 0) or (len(edge2[i])== 0) or (len(k[i])== 0) or (len(z[i])== 0) or (len(d[i])== 0):
             continue
@@ -326,15 +350,17 @@ def create_train_dataset_fulld_new_Ntrk_pt_weight_file(graphs, z, k, d, edge1, e
         # print(vec)
         graphs.append(Data(x=torch.tensor(vec, dtype=torch.float).detach(),
                            edge_index = torch.tensor(edge).detach(),
-                           Ntrk=torch.tensor(Ntracks[i], dtype=torch.int).detach(),
+                           #Ntrk=torch.tensor(Ntracks[i], dtype=torch.int).detach(),
+                           Ntrk=torch.tensor(Ntrk, dtype=torch.float).detach(),
                            weights =torch.tensor(weight[i], dtype=torch.float).detach(),
                            pt=torch.tensor(jet_pts[i], dtype=torch.float).detach(),
                            mass=torch.tensor(jet_ms[i], dtype=torch.float).detach(),
                            y=torch.tensor(label[i], dtype=torch.float).detach() ))
     return graphs
 
-def create_train_dataset_fulld_new_Ntrk_pt_weight_file_test(graphs, z, k, d, edge1, edge2, label, Ntracks, jet_pts, jet_ms):
 
+
+def create_train_dataset_fulld_new_Ntrk_pt_weight_file_test(graphs, z, k, d, edge1, edge2, label, Ntracks, jet_pts, jet_ms):
 
     for i in range(len(z)):
         # if i > 10: continue
@@ -342,27 +368,35 @@ def create_train_dataset_fulld_new_Ntrk_pt_weight_file_test(graphs, z, k, d, edg
 #         k[i] = np.nan_to_num(k[i], nan=1e-10, posinf=1e-10, neginf=-1e-10)
 #         d[i] = np.nan_to_num(d[i], nan=1e-10, posinf=1e-10, neginf=-1e-10)
 
-#         z[i][z[i] == 0] = 1e-10
-        k[i][k[i] == 0] = 1e-10
-        d[i][d[i] == 0] = 1e-10
-
-
+        #k[i][k[i] == 0] = 1e-10
+        #d[i][d[i] == 0] = 1e-10
+        
+        z[i] += 1e-7 # 1e-5
+        k[i] += 1e-7 # 1e-5
+        d[i] += 1e-7 # 1e-5
+        
         z[i] = np.log(1/z[i])
         k[i] = np.log(k[i])
         d[i] = np.log(1/d[i])
-
-
+        
+        '''
+        #Jad weights
         mean_z, std_z = 2.523076295852661, 5.264721870422363
         mean_dr, std_dr = 11.381295204162598, 13.63073444366455
         mean_kt, std_kt = -10.042571067810059, 15.398056030273438
         mean_ntrks, std_ntrks = 33.35614197897151, 12.064001858459823
-
-
+        '''
+        
+        mean_z, std_z = 2.1212295107646684, 2.0132512522977346
+        mean_dr, std_dr = 6.872297191581289, 6.109722726160649
+        mean_kt, std_kt = -5.367505330860997, 7.172331060648966
+        mean_ntrks, std_ntrks = 35.80012907092822, 11.740907468153635
+        #'''
         z[i] = (z[i] - mean_z) / std_z
         k[i] = (k[i] - mean_kt) / std_kt
         d[i] = (d[i] - mean_dr) / std_dr
-        Ntracks = (Ntracks - mean_ntrks) / std_ntrks
-
+        #Ntracks = (Ntracks - mean_ntrks) / std_ntrks
+        Ntrk = (Ntracks[i] - mean_ntrks) / std_ntrks
 
 
         if (len(edge1[i])== 0) or (len(edge2[i])== 0):
@@ -376,7 +410,8 @@ def create_train_dataset_fulld_new_Ntrk_pt_weight_file_test(graphs, z, k, d, edg
 
         graphs.append(Data(x=torch.tensor(vec, dtype=torch.float).detach(),
                            edge_index = torch.tensor(edge).detach(),
-                           Ntrk=torch.tensor(Ntracks[i], dtype=torch.int).detach(),
+                           #Ntrk=torch.tensor(Ntracks[i], dtype=torch.int).detach(),
+                           Ntrk=torch.tensor(Ntrk, dtype=torch.float).detach(),
                            pt=torch.tensor(jet_pts[i], dtype=torch.float).detach(),
                            mass=torch.tensor(jet_ms[i], dtype=torch.float).detach(),
                            y=torch.tensor(label[i], dtype=torch.float).detach() ))
@@ -411,6 +446,39 @@ def train(loader, model, device, optimizer):
         loss_all += data.num_graphs * loss.item()
         optimizer.step()
     return loss_all / len(loader.dataset)
+
+
+def train_clas(loader, model, device, optimizer1, optimizer2, optimizer3, epoch):
+    print ("dataset size:",len(loader.dataset))
+    model.train()
+    loss_all = 0
+    batch_counter = 0
+    for data in loader:
+        if len(data)<650:
+            continue
+        batch_counter+=1
+        data = data.to(device)
+        optimizer1.zero_grad()
+        optimizer2.zero_grad()
+        optimizer3.zero_grad()
+
+        output = model(data)
+        new_y = torch.reshape(data.y, (int(list(data.y.shape)[0]),1))
+        new_w = torch.reshape(data.weights, (int(list(data.weights.shape)[0]),1)) ## add weights
+        
+        loss = F.binary_cross_entropy(output, new_y, weight = new_w)
+        loss.backward()
+        loss_all += data.num_graphs * loss.item()
+
+        if epoch < 10:
+            optimizer3.step()
+        elif epoch < 20:
+            optimizer2.step()
+        else:
+            optimizer1.step()
+    
+    return loss_all / len(loader.dataset)
+
 
 
 def train_adversary(loader, clsf, adv, optimizer, device, loss_parameter):
