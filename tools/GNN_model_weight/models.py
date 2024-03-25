@@ -56,7 +56,7 @@ class Net(torch.nn.Module):
 # class LundNet(torch.nn.Module):
 #     def __init__(self):
 #         super(LundNet, self).__init__()
-#         self.conv1 = EdgeConv(nn.Sequential(nn.Linear(6, 32), nn.ReLU(), 
+#         self.conv1 = EdgeConv(nn.Sequential(nn.Linear(6, 32), nn.ReLU(),
 #                                             nn.Linear(32, 32), nn.ReLU()),aggr='add')
 #         self.conv2 = EdgeConv(nn.Sequential(nn.Linear(64, 32), nn.ReLU(),
 #                                             nn.Linear(32, 32), nn.ReLU()),aggr='add')
@@ -103,7 +103,7 @@ class Net(torch.nn.Module):
 class LundNet(torch.nn.Module):
     def __init__(self):
         super(LundNet, self).__init__()
-        self.conv1 = EdgeConv(nn.Sequential(nn.Linear(6, 32), nn.BatchNorm1d(num_features=32), nn.ReLU(), 
+        self.conv1 = EdgeConv(nn.Sequential(nn.Linear(6, 32), nn.BatchNorm1d(num_features=32), nn.ReLU(),
                                             nn.Linear(32, 32), nn.BatchNorm1d(num_features=32), nn.ReLU()),aggr='add')
         self.conv2 = EdgeConv(nn.Sequential(nn.Linear(64, 32), nn.BatchNorm1d(num_features=32), nn.ReLU(),
                                             nn.Linear(32, 32), nn.BatchNorm1d(num_features=32), nn.ReLU()),aggr='add')
@@ -617,41 +617,41 @@ def gaussian_probability_new(sigma, mu, target):
 
 
 def pi_redefinition(device, pi, sigma, mu):
-    # redefine pi in order to obtain normalized distributions inside [0,1] interval 
-    # mu = Mean         
-    # sigma = width          
+    # redefine pi in order to obtain normalized distributions inside [0,1] interval
+    # mu = Mean
+    # sigma = width
     t_ones = torch.ones( mu.size() )
     t_zeros = torch.zeros( mu.size() )
     t_ones = t_ones.to(device)
     t_zeros = t_zeros.to(device)
-    
+
     z0 = (t_zeros - mu) / sigma
     z1 = (t_ones - mu) / sigma
-    out_interval = 0.5 * (1. + torch.erf(z1 / np.sqrt(2.)))  - 0.5 * (1. + torch.erf(z0 / np.sqrt(2.)))  # area inside [0,1] 
+    out_interval = 0.5 * (1. + torch.erf(z1 / np.sqrt(2.)))  - 0.5 * (1. + torch.erf(z0 / np.sqrt(2.)))  # area inside [0,1]
     #print("pi size->",pi.size(),"   out_interval size->",out_interval.size() )
     pi_2 = pi / out_interval.view(pi.size())
     #print("pi_2[0]",pi_2[0])
     '''
-    for i in range (0,len(pi_2) ): # sum all gaussians must be =1 
+    for i in range (0,len(pi_2) ): # sum all gaussians must be =1
         #pi_2[i] = pi_2[i]/torch.sum(pi_2[i])
         pi_2[i] /= torch.sum(pi_2[i])
     '''
-    
+
     #print("pi size after:",pi_2.size() )
     #print(pi_2.size,"  ",pi_2[:2])
     return pi_2
-    
+
 def mdn_loss_new(device, pi, sigma, mu, target, weight):
     #print("pi---------------------------------------")
     #print(pi[:2])
-    
+
     pi_2 = pi_redefinition(device, pi, sigma, mu)
     #pi_2 = pi
-    
+
     ##redefine mu inside interval [-0.3,1.3] ~~ mu*1.6 - 0.3
     mu_shift = 0.3 * torch.ones( mu.size() )
     mu_shift = mu_shift.to(device)
-    mu_2 = 1.6 * mu - mu_shift 
+    mu_2 = 1.6 * mu - mu_shift
 
     '''
     print("---------------------------------------")
@@ -681,7 +681,7 @@ class Adversary_new(nn.Module):
     MDN_new(64, 1, num_gaussians)
 )
         self.revgrad = GradientReversal(lambda_parameter)
-        #print("lambda = {}".format(lambda_parameter)) 
+        #print("lambda = {}".format(lambda_parameter))
     def forward(self, x):
         x = self.revgrad(x) # important hyperparameter, the scale,   # tells by how much the classifier is punished
         x = self.gauss(x)
