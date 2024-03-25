@@ -49,9 +49,6 @@ def main():
     print("Training tagger on files", len(files))
     t_start = time.time()
 
-    allbranches = ["DSID", "mcWeight", "Akt10UFOJet_GhostBHadronsFinalCount",
-                "UFO_edge1", "UFO_edge2", "UFOSD_jetM", "UFOSD_jetPt",
-                "UFO_jetLundz", "UFO_jetLundKt", "UFO_jetLundDeltaR", "UFO_Ntrk"]
 
     dataset = []
     for file in files:
@@ -60,7 +57,8 @@ def main():
             tree = infile[intreename]
 
             dsids = tree["DSID"].array(library="np")
-            NBHadrons = tree["Akt10UFOJet_GhostBHadronsFinalCount"].array(library="np")
+            # NBHadrons = tree["Akt10UFOJet_GhostBHadronsFinalCount"].array(library="np")
+            NBHadrons = tree["Akt10UFOJet_ungroomedParent_GhostBHadronsFinalCount"].array(library="np")
             parent1 =  tree["UFO_edge1"].array(library="np")
             parent2 = tree["UFO_edge2"].array(library="np")
             jet_ms =  ak.to_numpy(tree["UFOSD_jetM"].array() )
@@ -157,34 +155,10 @@ def main():
     metrics_filename = path_to_save+"losses_"+model_name+datetime.now().strftime("%d%m-%H%M")+".txt"
 
     for epoch in range(n_epochs):
-        # print("Epoch:{}".format(epoch+1))
-        #train_loss.append(train(train_loader, model, device, optimizer))
         train_loss.append(train_clas(train_loader, model, device, optimizer, optimizer2, optimizer3, epoch))
-    #    print ("Train Loss:",train_loss[-1])
-    #    delta_t_fileax = time.time() - t_start
-    #    print("trained epoch in {:.4f} seconds.".format(delta_t_fileax))
         val_loss.append(my_test(val_loader, model, device))
 
-        #epsilon_bg, jds = aux_metrics(train_loader)
-        epsilon_bg, jds = 0,0
-        train_jds.append(jds)
-        # print ("Train epsilon bg:",epsilon_bg)
-        # print ("Train JDV:",jds)
-        train_bgrej.append(epsilon_bg)
-
-        #epsilon_bg_test, jds_test = aux_metrics(val_loader)
-        epsilon_bg_test, jds_test = 0,0
-        val_jds.append(jds_test)
-        val_bgrej.append(epsilon_bg_test)
-        # print ("Test epsilon bg:",epsilon_bg_test)
-        # print ("Test JDV:",jds_test)
-
-        print('Epoch: {:03d}, Train Loss: {:.5f}, Val Loss: {:.5f},train_jds: {:.5f},val_jds: {:.5f}'.format(epoch, train_loss[epoch], val_loss[epoch], train_jds[epoch], val_jds[epoch]))
-        # metrics = pd.DataFrame({"Train_Loss":train_loss[epoch],"Val_Loss":val_loss[epoch], "Train_jds":train_jds[epoch],"Val_jds":val_jds[epoch],"Train_bgrej":train_bgrej[epoch],"Val_bgrej":val_bgrej[epoch]})
-        # metrics = pd.DataFrame({"Train_Loss":train_loss[epoch],"Val_Loss":val_loss[epoch]})
-        # metrics.to_csv(metrics_filename, index = False)
-
-    #    print('Epoch: {:03d}, Train Loss: {:.5f}, Val Loss: {:.5f}'.format(epoch+1, train_loss[epoch], val_loss[epoch]))
+        print('Epoch: {:03d}, Train Loss: {:.5f}, Val Loss: {:.5f}'.format(epoch, train_loss[epoch], val_loss[epoch]))
         if (save_every_epoch):
             torch.save(model.state_dict(), path_to_save+model_name+"e{:03d}".format(epoch+1)+"_{:.5f}".format(val_loss[epoch])+".pt")
         elif epoch == n_epochs-1:
