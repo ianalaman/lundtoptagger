@@ -33,4 +33,11 @@ Plot!
 ```
 source setup.sh
 python -b plotting.py 
-``` 
+```
+
+## To do list: 
+[] Cut on ln(kt): prepare multiple graphs with different values of ln(kT) cuts 
+[] Make a bkg rej vs ln(kT) plot
+[] Make the LundJetPlane plot with the prediction to see where the modeling uncertainties impact the most
+[] Apply a shift of 5% to mean pT of the constituent, and test on that sample
+[] Apply a shift of 5% to resolution pT of the constituent, and test on that sample
