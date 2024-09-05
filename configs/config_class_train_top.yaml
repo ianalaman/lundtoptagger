@@ -1,13 +1,13 @@
 data:
-  path_to_trainfiles: "/data/jmsardain/LJPTagger/FullSplittings/SplitForTopTagger/5_Signal_and_BKG_cutTruth350/*_train.root"
+  path_to_trainfiles: "/data/ravinascos/Lund_Plane_2024_graphs/TRAIN_DUMMY_05QCD_2Z/*train.root"
   path_to_save: "/data/jmsardain/LJPTagger/Models/TopTagger/LundNetCut350_MultiOptimizers/"
-  model_name: "LundNet_"
+  model_name: "LundNet_R22"
 
 architecture:
-  batch_size: 2048
+  batch_size: 1024
   test_size: 0.2
   n_epochs: 30
-  learning_rate: 0.0004
+  learning_rate: 0.0005
   choose_model: LundNet ## LundNet, GATNet, GINNet, EdgeGinNet, PNANet
   save_every_epoch: True
 

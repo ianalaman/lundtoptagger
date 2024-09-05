@@ -44,7 +44,7 @@ def main():
     #files = files[:1]
     jet_type = "Akt10UFOJet" #UFO jets
     save_trained_model = True
-    intreename = "FlatSubstructureJetTree"
+    intreename = "AnalysisTree"
 
     print("Training tagger on files", len(files))
     t_start = time.time()
@@ -55,26 +55,29 @@ def main():
         print("Loading file",file)
         with uproot.open(file) as infile:
             tree = infile[intreename]
+            
+            dsids_test = tree["dsid"].array(library="np")
+            if dsids_test[0] == 364702 :
+                continue
+            dsids = ak.to_numpy(ak.flatten(tree["LRJ_truthLabel"].array(library="ak")) )
 
-            dsids = tree["DSID"].array(library="np")
-            # NBHadrons = tree["Akt10UFOJet_GhostBHadronsFinalCount"].array(library="np")
-            NBHadrons = tree["Akt10UFOJet_ungroomedParent_GhostBHadronsFinalCount"].array(library="np")
-            parent1 =  tree["UFO_edge1"].array(library="np")
-            parent2 = tree["UFO_edge2"].array(library="np")
-            jet_ms =  ak.to_numpy(tree["UFOSD_jetM"].array() )
-            jet_pts = tree["UFOSD_jetPt"].array(library="np")
-            all_lund_zs = tree["UFO_jetLundz"].array(library="np")
-            all_lund_kts =  tree["UFO_jetLundKt"].array(library="np")
-            all_lund_drs = tree["UFO_jetLundDeltaR"].array(library="np")
-            all_Ntrk = tree["UFO_Ntrk"].array(library="np")
+            parent1 = ak.flatten(tree["jetLundIDParent1"].array(library="ak")) 
+            parent2 = ak.flatten(tree["jetLundIDParent2"].array(library="ak")) 
+            jet_ms = ak.to_numpy(ak.flatten(tree["LRJ_mass"].array(library="ak")))
+            all_lund_zs = ak.flatten(tree["jetLundZ"].array(library="ak")) 
+            all_lund_kts = ak.flatten(tree["jetLundKt"].array(library="ak")) 
+            all_lund_drs = ak.flatten(tree["jetLundDeltaR"].array(library="ak")) 
+            N_tracks = ak.to_numpy(ak.flatten(tree["LRJ_Nconst_Charged"].array(library="ak")) )
+            jet_pts = ak.to_numpy(ak.flatten(tree["LRJ_pt"].array(library="ak")) )
 
+            labels = dsids
 
-            labels = ( dsids > 370000 ) & ( NBHadrons >=1 )
-            labels = to_categorical(labels, 2)
-            labels = np.reshape(labels[:,1], (len(all_lund_zs), 1))
-            # flat_weights = GetPtWeight_2( dsids, jet_pts, SF=config['data']['scale_factor'])
-            flat_weights = GetPtWeight( dsids, jet_pts, 1)
-            dataset = create_train_dataset_fulld_new_Ntrk_pt_weight_file(dataset , all_lund_zs, all_lund_kts, all_lund_drs, parent1, parent2, flat_weights, labels, all_Ntrk, jet_pts, jet_ms)
+            #flat_weights = GetPtWeight( dsids, jet_pts, 1)
+            flat_weights = GetPtWeight_2( dsids, jet_pts, 5)
+            
+            #dataset = create_train_dataset_fulld_new_Ntrk_pt_weight_file(dataset , all_lund_zs, all_lund_kts, all_lund_drs, parent1, parent2, flat_weights, labels, all_Ntrk, jet_pts, jet_ms)
+            dataset = create_train_dataset_fulld_new_Ntrk_pt_weight_file( dataset , all_lund_zs, all_lund_kts, all_lund_drs, parent1, parent2, flat_weights, labels ,N_tracks, jet_pts , jet_ms)
+
             gc.collect()
 
     print("Dataset created!")
@@ -132,7 +135,7 @@ def main():
         path = path_to_ckpt
         model.load_state_dict(torch.load(path))
 
-
+    #device = torch.device('cpu')
     device = torch.device('cuda') # Usually gpu 4 worked best, it had the most memory available
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
