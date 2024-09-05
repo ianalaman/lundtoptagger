@@ -184,24 +184,21 @@ def create_train_dataset_fulld_new_Ntrk_pt_weight_file(graphs, z, k, d, edge1, e
 
 
 
-def create_train_dataset_fulld_new_Ntrk_pt_weight_file_test(graphs, graph_small_example, z, k, d, edge1, edge2, weight, label, Ntracks, jet_pts, jet_ms):
+def create_train_dataset_fulld_new_Ntrk_pt_weight_file_test(graphs, z, k, d, edge1, edge2, weight, label, Ntracks, jet_pts, jet_ms):
 
     data_under3 = 0
     for i in range(len(z)):
-        
-        #continue
+        if len(z[i])<5: 
+            continue
+
+        if (label[i]!=1) and (label[i]!=10) :
+            continue
         label_out = label[i]
         if label[i]== 10:
             label_out = 0
-        if len(z[i])<3: 
-            #print("len(z[i])<4!!!:",len(z[i]))
-            if i==0: 
-                print("WARNING!!!!")
-                graphs.append(graph_small_example)
-            else:
-                graphs.append(data_under3)
-            label_out = 6
-            continue
+
+        if jet_pts[i] > 3200: continue
+        if jet_pts[i] < 350: continue 
 
         z_out = ak.to_numpy(z[i])
         k_out = ak.to_numpy(k[i])
@@ -244,15 +241,6 @@ def create_train_dataset_fulld_new_Ntrk_pt_weight_file_test(graphs, graph_small_
                            mass=torch.tensor(jet_ms[i], dtype=torch.float).detach(),
                            y=torch.tensor(label[i], dtype=torch.float).detach() ))
         
-        if i == 0 or i==1 or i==0:
-            if len(z[i])>2:
-                data_under3 = Data(x=torch.tensor(vec, dtype=torch.float).detach(),
-                                   edge_index = torch.tensor(edge).detach(),
-                                   #Ntrk=torch.tensor(Ntracks[i], dtype=torch.int).detach(),
-                                   Ntrk=torch.tensor(Ntrk, dtype=torch.float).detach(),
-                                   pt=torch.tensor(jet_pts[i], dtype=torch.float).detach(),
-                                   mass=torch.tensor(jet_ms[i], dtype=torch.float).detach(),
-                                   y=torch.tensor(label_out, dtype=torch.float).detach() )
     return graphs
 
 

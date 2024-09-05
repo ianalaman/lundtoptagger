@@ -1,6 +1,6 @@
 data:
-  path_to_trainfiles: "/data/ravinascos/Lund_Plane_2024_graphs/TRAIN_DUMMY_05QCD_2Z/*train.root"
-  path_to_save: "/data/jmsardain/LJPTagger/Models/TopTagger/LundNetCut350_MultiOptimizers/"
+  path_to_trainfiles: "/data/ravinascos/Lund_Plane_2024_graphs/TRAIN_DUMMY_01QCD_05Z/*train.root"
+  path_to_save: "/data/jmsardain/LJPTagger/Models/R22/TopTagger/LundNet/"
   model_name: "LundNet_R22"
 
 architecture:

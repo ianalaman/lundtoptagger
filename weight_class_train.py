@@ -38,11 +38,8 @@ def main():
     config = load_yaml(config_file)
 
     path_to_file = config['data']['path_to_trainfiles']
-    # path_to_file = '/data/jmsardain/LJPTagger/FewSplittings/15_train_5_test_9splittings/user.rvinasco.31*000003.tree.root_train.root'
     files = glob.glob(path_to_file)
-    #files = glob.glob("/sps/atlas/k/khandoga/MySamplesS40/user.rvinasco.27045978._000004.tree.root_train.root")
-    #files = files[:1]
-    jet_type = "Akt10UFOJet" #UFO jets
+    # jet_type = "Akt10UFOJet" #UFO jets
     save_trained_model = True
     intreename = "AnalysisTree"
 
