@@ -1,4 +1,4 @@
-200, 0, 1#import uproot
+#import uproot
 #import awkward as ak
 import numpy as np
 import matplotlib
@@ -301,13 +301,16 @@ def make_rocs(taggers, prefix=''):
 
     c1 = ap.canvas(num_pads=1, batch=True)
     count = 0
+    print("111111")
     for t in taggers:
         if taggers[t].name == "3var":
             continue
-        if taggers[t].name == "HerwigAngular" or taggers[t].name == "HerwigDipole" or taggers[t].name == "SherpaCluster" :
+        if taggers[t].name == "HerwigAngular" or taggers[t].name == "HerwigDipole" or taggers[t].name == "SherpaCluster" or taggers[t].name == "SherpaLund" :
             continue
+        
         tprs, fprs, auc = taggers[t].get_roc()
 
+        print("2222")
         ## Fill random guessing
         if count==0:
             h = TGraph(len(tprs), np.linspace(0.0001, 1, len(tprs)), np.linspace(0.0001, 1, len(tprs)))
@@ -364,6 +367,19 @@ def make_efficiencies_all(taggers, prefix=''):
 
     legend.AddEntry(h, "LundNet^{NN}", 'l')
 
+    ## LundNetNN:other
+    '''
+    tprs, fprs, auc = taggers["LundNet"].get_roc()
+    inv = 1/fprs
+    inv[inv == np.inf] = 1e10
+    label = "LundNet^{NN}"
+    h2 = TGraph(len(np.array(tprs, dtype=np.float64)), np.array(tprs, dtype=np.float64), np.array(inv, dtype=np.float64))
+    print(len(np.array(tprs, dtype=np.float64)))
+    h2 = c1.graph(h2, linestyle=1,linewidth=2, linecolor=colours[1], markercolor=colours[1], markerstyle=1, label=label)
+    mg.Add(h2, "AL")
+    legend.AddEntry(h2, "LundNet^{NN}_previous", 'l')
+    '''
+    
     # file = ROOT.TFile.Open("/home/jmsardain/LJPTagger/ljptagger/Plotting/FromShudong/ROCs.root")
     # # Particle transformer
     # ROC_pt_full_Wtag_ParT = file.Get("ROC_pt_full_Wtag_ParT")
@@ -410,7 +426,7 @@ def make_efficiencies_all(taggers, prefix=''):
     c1.xlabel('Signal efficiency (#varepsilon^{rel}_{sig})')
     c1.ylabel('Background rejection (1/#varepsilon^{rel}_{bkg})')
     c1.xlim(0.2,  1) ## c1.xlim(0.2, 1)
-    c1.ylim(1, 2e16)
+    c1.ylim(1, 1e5)
 
     # c1.text(["#sqrt{s} = 13 TeV, #it{top} tagging",
     #         "anti-k_{t} R=1.0 UFO Soft-Drop CS+SK jets",
@@ -698,8 +714,10 @@ def get_wp_tag(tagger, wp, prefix=''):
 
     p = fitfunc.GetParameters()
     tagger.scores["tag_cut"] = np.vectorize(lambda x:p[0]+p[1]/(p[2]+math.exp(p[3]*(x+p[4]))))(tagger.scores.fjet_pt)
-    tagger.signal = tagger.scores[tagger.scores.EventInfo_mcChannelNumber>370000]
-    tagger.bg = tagger.scores[tagger.scores.EventInfo_mcChannelNumber<370000]
+    #tagger.signal = tagger.scores[tagger.scores.EventInfo_mcChannelNumber>370000]
+    #tagger.bg = tagger.scores[tagger.scores.EventInfo_mcChannelNumber<370000]
+    tagger.signal = tagger.scores[tagger.scores.EventInfo_mcChannelNumber==1]
+    tagger.bg = tagger.scores[tagger.scores.EventInfo_mcChannelNumber==10]
 
     tagger.bg_tagged = tagger.bg[tagger.bg.fjet_nnscore > tagger.bg.tag_cut]
     tagger.bg_untagged = tagger.bg[(tagger.bg.fjet_nnscore < tagger.bg.tag_cut) & (tagger.bg.fjet_nnscore>=0)]
@@ -812,8 +830,10 @@ def get_wp_th1(tagger,wp, prefix=''):
     def score_cut(pt):
         return h_pt_nn_h.GetBinContent(h_pt_nn_h.FindBin(pt))
     tagger.scores["tag_cut"] = np.vectorize(score_cut)(tagger.scores.fjet_pt)
-    tagger.signal = tagger.scores[tagger.scores.EventInfo_mcChannelNumber>370000]
-    tagger.bg = tagger.scores[tagger.scores.EventInfo_mcChannelNumber<370000]
+    #tagger.signal = tagger.scores[tagger.scores.EventInfo_mcChannelNumber>370000]
+    #tagger.bg = tagger.scores[tagger.scores.EventInfo_mcChannelNumber<370000]
+    tagger.signal = tagger.scores[tagger.scores.EventInfo_mcChannelNumber==1]
+    tagger.bg = tagger.scores[tagger.scores.EventInfo_mcChannelNumber==10]
 
     tagger.bg_tagged = tagger.bg[tagger.bg.fjet_nnscore > tagger.bg.tag_cut]
     tagger.bg_untagged = tagger.bg[tagger.bg.fjet_nnscore < tagger.bg.tag_cut]
@@ -826,24 +846,27 @@ def get_flat_weight(pt,dsid):
     flat_bg = inFile.Get("bg_inv")
     flat_sig = inFile.Get("h_sig_inv")
 
-    if dsid > 370000:
+    #if dsid > 370000:
+    if dsid == 1:
         return flat_sig.GetBinContent(flat_sig.FindBin(pt))
     else:
         return flat_bg.GetBinContent(flat_bg.FindBin(pt))
 
 class tagger_scores():
     def __init__(self, name, score_file,working_point):
-        intreename = "FlatSubstructureJetTree"
+        intreename = 'FlatSubstructureJetTree'
         self.name = name
         self.score_file = score_file
 
-        f = TFile.Open(score_file, 'READ')
+        #f = TFile.Open(score_file, 'READ')
+        f = TFile.Open(score_file)
         tree = f.Get(intreename)
 
         #self.events = uproot.open(score_file+":"+intreename)
         #self.scores = self.events.arrays( library="pd")
         branches = []
         mycopy = tree.GetListOfBranches()
+        
         for i in mycopy:
             branches.append(i.GetName())
         #print(str(branches))
@@ -853,6 +876,10 @@ class tagger_scores():
         # #print(self.scores.head())
         # #print(self.scores["EventInfo_mcChannelNumber"].values)
 
+        f.Close()
+        f = 2
+        tree = 2
+    
         self.scores["no_weight"]   = np.ones_like(self.scores.fjet_pt.values)
         # #print("I am here in utils")
         try:
@@ -860,25 +887,80 @@ class tagger_scores():
         except:
             self.scores["chris_weight"] = (self.scores["fjet_weight_pt"].values)
 
-        self.scores      = self.scores[  (self.scores["chris_weight"] < 150) | (self.scores.EventInfo_mcChannelNumber<370000) ]
+        #self.scores      = self.scores[  (self.scores["chris_weight"] < 150 ) | (self.scores.EventInfo_mcChannelNumber<370000) ]
+
+
         
+        self.scores      = self.scores[ self.scores.fjet_pt > 350 ]
+        #self.scores      = self.scores[ self.scores.fjet_pt < 3050 ]
+
+
+
+        ## include only good jets
+        self.scores      = self.scores[ (self.scores.EventInfo_mcChannelNumber == 10)  | (self.scores.EventInfo_mcChannelNumber == 1)  ]
+
+
         ## Make the pt spectrum smooth (Chris Delitzsch advice)
-        alpha = self.scores[self.scores.EventInfo_mcChannelNumber == 364702][self.scores.fjet_pt > 1000]
+        alpha = self.scores[self.scores.EventInfo_mcChannelNumber == 364702][self.scores.fjet_pt > 500]
         self.scores  = self.scores[self.scores.index.isin(alpha.index) == False]
         alpha = self.scores[self.scores.EventInfo_mcChannelNumber == 364703][self.scores.fjet_pt > 1000]
         self.scores  = self.scores[self.scores.index.isin(alpha.index) == False]
         alpha = self.scores[self.scores.EventInfo_mcChannelNumber == 364704][self.scores.fjet_pt > 2000]
         self.scores  = self.scores[self.scores.index.isin(alpha.index) == False]
 
-        self.signal        = self.scores[self.scores.EventInfo_mcChannelNumber>370000]
+
+        ## serpa lund
+        alpha = self.scores[self.scores.EventInfo_mcChannelNumber == 364687][self.scores.fjet_pt > 500]
+        self.scores  = self.scores[self.scores.index.isin(alpha.index) == False]
+        alpha = self.scores[self.scores.EventInfo_mcChannelNumber == 364688][self.scores.fjet_pt > 1000]
+        self.scores  = self.scores[self.scores.index.isin(alpha.index) == False]
+        alpha = self.scores[self.scores.EventInfo_mcChannelNumber == 364689][self.scores.fjet_pt > 2000]
+        self.scores  = self.scores[self.scores.index.isin(alpha.index) == False]
+
+        #364692 364693 364694  *10
+        
+
+        ## serpa cluster
+        alpha = self.scores[self.scores.EventInfo_mcChannelNumber == 364678][self.scores.fjet_pt > 500]
+        self.scores  = self.scores[self.scores.index.isin(alpha.index) == False]
+        alpha = self.scores[self.scores.EventInfo_mcChannelNumber == 364679][self.scores.fjet_pt > 1000]
+        self.scores  = self.scores[self.scores.index.isin(alpha.index) == False]
+        alpha = self.scores[self.scores.EventInfo_mcChannelNumber == 364680][self.scores.fjet_pt > 2000]
+        self.scores  = self.scores[self.scores.index.isin(alpha.index) == False]
+
+        ## Herwing dipole
+        alpha = self.scores[self.scores.EventInfo_mcChannelNumber == 364902][self.scores.fjet_pt > 500]
+        self.scores  = self.scores[self.scores.index.isin(alpha.index) == False]
+        alpha = self.scores[self.scores.EventInfo_mcChannelNumber == 364903][self.scores.fjet_pt > 1000]
+        self.scores  = self.scores[self.scores.index.isin(alpha.index) == False]
+        alpha = self.scores[self.scores.EventInfo_mcChannelNumber == 364904][self.scores.fjet_pt > 2000]
+        self.scores  = self.scores[self.scores.index.isin(alpha.index) == False]
+
+        ## Herwig angular
+        alpha = self.scores[self.scores.EventInfo_mcChannelNumber == 364922][self.scores.fjet_pt > 400]
+        self.scores  = self.scores[self.scores.index.isin(alpha.index) == False]
+        alpha = self.scores[self.scores.EventInfo_mcChannelNumber == 364923][self.scores.fjet_pt > 700]
+        self.scores  = self.scores[self.scores.index.isin(alpha.index) == False]
+        alpha = self.scores[self.scores.EventInfo_mcChannelNumber == 364924][self.scores.fjet_pt > 750]
+        self.scores  = self.scores[self.scores.index.isin(alpha.index) == False]
+
+        
+
+        #self.signal        = self.scores[self.scores.EventInfo_mcChannelNumber>370000]
+        self.signal        = self.scores[self.scores.EventInfo_mcChannelNumber==1]
+
         # self.signal =  self.signal[ self.signal["ungroomedtruthjet_m"]>50000 ]
         # self.signal  =self.signal[ self.signal["EventInfo_NBHadrons"] == 0 ]
         # self.signal =  self.signal[ self.signal["ungroomedtruthjet_split12"]/1000 > 55.25*np.exp( (-2.34/1000.) * (self.signal["ungroomedtruthjet_pt"]/1000) )  ]
         self.signal_tagged = self.signal[self.signal.fjet_nnscore > working_point]
 
-        self.bg          = self.scores[self.scores.EventInfo_mcChannelNumber<370000]
+        #self.bg          = self.scores[self.scores.EventInfo_mcChannelNumber<370000]
+        self.bg          = self.scores[self.scores.EventInfo_mcChannelNumber==10]
         self.bg_tagged   = self.bg[self.bg.fjet_nnscore > working_point]
         self.bg_untagged = self.bg[self.bg.fjet_nnscore < working_point]
+
+        print("sig->",len(self.signal))
+        print("bg->",len(self.bg))
 
 
         self.signal_pt_300_650      = self.signal[  (self.signal["fjet_pt"] < 650) & ((self.signal["fjet_pt"] > 300))]
@@ -966,15 +1048,15 @@ class tagger_scores():
         self.signal_taggedmass50 = self.signal_taggedmass50.dropna()
         self.bg_taggedmass50 = self.bg_taggedmass50.dropna()
 
-        print (self.name)
+        print ("2",self.name)
 
         #print ("signal ratio:",len(self.signal_tagged.values)/len(self.signal.values))
         #print ("bg ratio:",        len(self.bg_tagged.values)/len(self.bg.values))
 
         # #print(self.signal["fjet_nnscore"].values)
 
-        self.h_signal = TH1D( "signal{}".format(self.name), "signal{}".format(self.name), 1200, 0, 1)
-        self.h_bg     = TH1D(     "bg{}".format(self.name),     "bg{}".format(self.name), 1200, 0, 1)
+        self.h_signal = TH1D( "signal{}".format(self.name), "signal{}".format(self.name), 400, 0, 1)
+        self.h_bg     = TH1D(     "bg{}".format(self.name),     "bg{}".format(self.name), 400, 0, 1)
         self.h_signal_300_650 = TH1D( "signal_300_650{}".format(self.name), "signal_300_650{}".format(self.name), 200, 0, 1)
         self.h_bg_300_650     = TH1D(     "bg_300_650{}".format(self.name),     "bg_300_650{}".format(self.name), 200, 0, 1)
         self.h_signal_650_1000 = TH1D( "signal_650_1000{}".format(self.name), "signal_650_1000{}".format(self.name), 200, 0, 1)
@@ -1123,9 +1205,10 @@ class tagger_scores():
         # fh(self.h_signalmass50_pt_2000_3000_NOWEIGHTS, self.signalmass50_pt_2000_3000["fjet_nnscore"].values)
         # fh(self.h_bgmass50_pt_2000_3000_NOWEIGHTS,         self.bgmass50_pt_2000_3000["fjet_nnscore"].values)
 
-
-
-    workingpoint = 0.5
+        print ("end",self.name)
+        
+    
+        workingpoint = 0.5
     def get_roc(self):
         tprs, fprs, auc, tpr_wp, fpr_wp = roc_from_histos(self.h_signal, self.h_bg,self.h_signal, self.h_bg, 0.5, massCut=False)
         return tprs, fprs, auc
@@ -1274,6 +1357,7 @@ class trivar_scores():
         arr = tree2array(tree, branches = branches, include_weight = False)
         self.scores = pd.DataFrame(arr)
 
+        #self.scores["chris_weight"] = (self.scores["fjet_weight_pt"])
         self.scores["chris_weight"] = (self.scores["fjet_weight_pt"])
         self.scores["xsec_weight"] = np.vectorize(assign_weights)(self.scores["EventInfo_mcChannelNumber"],self.scores["EventInfo_mcEventWeight"])
         self.scores["flat_weight"] = np.vectorize(get_flat_weight)(self.scores["fjet_pt"],self.scores["EventInfo_mcChannelNumber"])
@@ -1303,14 +1387,16 @@ class trivar_scores():
         self.scores["mlow_cut"] = np.vectorize(lambda x:coeffs_mass_low[0]+x*coeffs_mass_low[1]+coeffs_mass_low[2]*x**2+coeffs_mass_low[3]*x**3+coeffs_mass_low[4]*x**4+coeffs_mass_low[5]*x**5+coeffs_mass_low[6]*x**6)(self.scores.fjet_pt)
         self.scores["mhigh_cut"] = np.vectorize(lambda x:coeffs_mass_high[0]+x*coeffs_mass_high[1]+coeffs_mass_high[2]*x**2+coeffs_mass_high[3]*x**3+coeffs_mass_high[4]*x**4+coeffs_mass_high[5]*x**5+coeffs_mass_high[6]*x**6)(self.scores.fjet_pt)
 
-        self.signal = self.scores[self.scores.EventInfo_mcChannelNumber>370000]
-        self.bg = self.scores[self.scores.EventInfo_mcChannelNumber<370000]
+        #self.signal = self.scores[self.scores.EventInfo_mcChannelNumber>370000]
+        #self.bg = self.scores[self.scores.EventInfo_mcChannelNumber<370000]
+        self.signal = self.scores[self.scores.EventInfo_mcChannelNumber==1]
+        self.bg = self.scores[self.scores.EventInfo_mcChannelNumber==10]
 
         self.signal_tagged = self.signal[self.signal.fjet_m > self.signal["mlow_cut"]][self.signal.fjet_m < self.signal["mhigh_cut"]][self.signal.fjet_d2 < self.signal["d2_cut"]][self.signal.fjet_ntrk < self.signal["ntrk_cut"]]
         self.bg_tagged = self.bg[self.bg.fjet_m > self.bg["mlow_cut"]][self.bg.fjet_m < self.bg["mhigh_cut"]][self.bg.fjet_d2 < self.bg["d2_cut"]][self.bg.fjet_ntrk < self.bg["ntrk_cut"]]
         self.bg_untagged  = self.bg[self.bg.index.isin(self.bg_tagged.index) == False]
 
-        print (self.name)
+        print ("1",self.name)
         print ("signal ratio:" ,len(self.signal_tagged)/len(self.signal))
         print ("bg ratio:" ,len(self.bg_tagged)/len(self.bg))
 
@@ -1850,9 +1936,9 @@ def pt_bgrej(taggers,weight="chris_weight", prefix='', wp=0.5):
     count = 0
     for t in taggers:
         if t=="LundNet_class":  label = "LundNet^{NN}"
-        if t=="LundNet"      :  label = "LundNet^{ANN}"
+        if t=="LundNet"      :  label = "LundNet^{previous}"
 
-        if t=="HerwigAngular" or t=="HerwigDipole" or t=="SherpaCluster": 
+        if t=="HerwigAngular" or t=="HerwigDipole" or t=="SherpaCluster" or t=="SherpaLund": 
             continue
 
         ## Get total background
@@ -1870,11 +1956,12 @@ def pt_bgrej(taggers,weight="chris_weight", prefix='', wp=0.5):
         # c.ratio_plot((h_bg_total,      h_bg), option='P E2', bins=bins, label=label, linecolor=colours[count])
         count +=1
 
+    #'''
     if wp==0.5:
         c.hist(total_binned_br_50, option='P E2', bins=bins, label='ParticleNet', linestyle=9, markerstyle=4, markercolor=colours[1], linecolor=colours[1], fillcolor=colours[1] ,alpha=0.3)
     if wp==0.8:
         c.hist(total_binned_br_80, option='P E2', bins=bins, label='ParticleNet', linestyle=9, markerstyle=4, markercolor=colours[1], linecolor=colours[1], fillcolor=colours[1], alpha=0.3)
-
+    #'''
 
 
     c.xlabel('Large-#it{R} jet p_{T} [GeV]')
@@ -2716,8 +2803,11 @@ def get_wp_tag_pol_func(tagger, wp):
 def get_tag_other_MC(tagger, p, wp):
     
     tagger.scores["tag_cut"] = np.vectorize(lambda x:p[0]+p[1]/(p[2]+math.exp(p[3]*(x+p[4]))))(tagger.scores.fjet_pt)
-    tagger.signal = tagger.scores[tagger.scores.EventInfo_mcChannelNumber>370000]
-    tagger.bg = tagger.scores[tagger.scores.EventInfo_mcChannelNumber<370000]
+    #tagger.signal = tagger.scores[tagger.scores.EventInfo_mcChannelNumber>370000]
+    #tagger.bg = tagger.scores[tagger.scores.EventInfo_mcChannelNumber<370000]
+    tagger.signal = tagger.scores[tagger.scores.EventInfo_mcChannelNumber==1]
+    tagger.bg = tagger.scores[tagger.scores.EventInfo_mcChannelNumber==10]
+    
     tagger.bg_tagged = tagger.bg[tagger.bg.fjet_nnscore > tagger.bg.tag_cut]
     tagger.bg_untagged = tagger.bg[(tagger.bg.fjet_nnscore < tagger.bg.tag_cut) & (tagger.bg.fjet_nnscore>=0)]
     tagger.signal_tagged = tagger.signal[tagger.signal.fjet_nnscore > tagger.signal.tag_cut]
@@ -2820,6 +2910,7 @@ def pt_bgrej_otherMC(taggers,weight="chris_weight", prefix='', wp=0.5):
         if t=="HerwigAngular":  label = "HerwigAngular"
         if t=="HerwigDipole"      :  label = "HerwigDipole"
         if t=="SherpaCluster"      :  label = "SherpaCluster"
+        if t=="SherpaLund"      :  label = "SherpaLund"
 
         
         ## Get total background
@@ -2832,9 +2923,10 @@ def pt_bgrej_otherMC(taggers,weight="chris_weight", prefix='', wp=0.5):
         if t=="LundNet_class":  markerstyle,linestyle  = 20,1
         if t=="LundNet"      :  markerstyle,linestyle =4,9
 
-        if t=="HerwigAngular":  markerstyle,linestyle  = 20,2
+        if t=="HerwigAngular":  markerstyle,linestyle  = 20,3
         if t=="HerwigDipole"      :  markerstyle,linestyle =20,3
         if t=="SherpaCluster"      :  markerstyle,linestyle =20,3
+        if t=="SherpaLund"      :  markerstyle,linestyle =20,3
         
         c.hist(hratio, option='P E2', bins=bins, label=label, linestyle=linestyle, markerstyle=markerstyle, markercolor=colours[count], linecolor=colours[count], fillcolor=colours[count], alpha=0.3)
 
@@ -2856,6 +2948,5 @@ def pt_bgrej_otherMC(taggers,weight="chris_weight", prefix='', wp=0.5):
     c.save("{}/pt_bgrej_otherMC.png".format(prefix))
     c.save("{}/pt_bgrej_otherMC.pdf".format(prefix))
     c.save("{}/pt_bgrej_otherMC.eps".format(prefix))
-
 
 
