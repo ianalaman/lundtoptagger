@@ -131,8 +131,8 @@ def create_train_dataset_fulld_new_Ntrk_pt_weight_file(graphs, z, k, d, edge1, e
 
     test_bool = 1
     buildID_from_graphs = 0
-    Primary_Lund_Plane = 1
-    extra_node = 1
+    Primary_Lund_Plane = 0
+    extra_node = 0
     for i in range(len(z)):  
         '''
         label_np = ak.to_numpy(label[i])
@@ -563,8 +563,8 @@ def create_train_dataset_fulld_new_Ntrk_pt_weight_file_test(graphs, graph_small_
     
     test_bool = 1
     buildID_from_graphs = 0
-    Primary_Lund_Plane = 1
-    extra_node = 1
+    Primary_Lund_Plane = 0
+    extra_node = 0
     print("extra_node condition-", extra_node)
     for i in range(len(z)):  
         #print("len(z)", len(z))
