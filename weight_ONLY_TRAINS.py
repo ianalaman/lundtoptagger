@@ -22,7 +22,7 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 
 from tools.GNN_model_weight.models import *
-from tools.GNN_model_weight.utils  import *
+from tools.GNN_model_weight.utils_newdata import *
 
 import gc
 print("Libraries loaded!")
@@ -38,72 +38,31 @@ def main():
     config = load_yaml(config_file)
 
     path_to_file = config['data']['path_to_trainfiles']
-    files = glob.glob(path_to_file)
-    # jet_type = "Akt10UFOJet" #UFO jets
+
+    print("dataset used:", path_to_file)
+
     save_trained_model = True
-    intreename = "AnalysisTree"
 
-    print("Training tagger on files", len(files))
-    t_start = time.time()
+    
+    #output_path_graphs = "data/graphs_NewDataset_"
 
-
-    dataset = []
-    for file in files:
-        print("Loading file",file)
-        with uproot.open(file) as infile:
-            tree = infile[intreename]
-            
-            dsids_test = tree["dsid"].array(library="np")
-            if dsids_test[0] == 364702 :
-                continue
-            dsids = ak.to_numpy(ak.flatten(tree["LRJ_truthLabel"].array(library="ak")) )
-
-            parent1 = ak.flatten(tree["jetLundIDParent1"].array(library="ak")) 
-            parent2 = ak.flatten(tree["jetLundIDParent2"].array(library="ak")) 
-            jet_ms = ak.to_numpy(ak.flatten(tree["LRJ_mass"].array(library="ak")))
-            all_lund_zs = ak.flatten(tree["jetLundZ"].array(library="ak")) 
-            all_lund_kts = ak.flatten(tree["jetLundKt"].array(library="ak")) 
-            all_lund_drs = ak.flatten(tree["jetLundDeltaR"].array(library="ak")) 
-            N_tracks = ak.to_numpy(ak.flatten(tree["LRJ_Nconst_Charged"].array(library="ak")) )
-            jet_pts = ak.to_numpy(ak.flatten(tree["LRJ_pt"].array(library="ak")) )
-
-            labels = dsids
-
-            #flat_weights = GetPtWeight( dsids, jet_pts, 1)
-            flat_weights = GetPtWeight_2( dsids, jet_pts, 5)
-            
-            #dataset = create_train_dataset_fulld_new_Ntrk_pt_weight_file(dataset , all_lund_zs, all_lund_kts, all_lund_drs, parent1, parent2, flat_weights, labels, all_Ntrk, jet_pts, jet_ms)
-            dataset = create_train_dataset_fulld_new_Ntrk_pt_weight_file( dataset , all_lund_zs, all_lund_kts, all_lund_drs, parent1, parent2, flat_weights, labels ,N_tracks, jet_pts , jet_ms)
-
-            gc.collect()
-
-    print("Dataset created!")
-    delta_t_fileax = time.time() - t_start
-    print("Created dataset in {:.4f} seconds.".format(delta_t_fileax))
-
-
-    #dataset = create_train_dataset_fulld_new(all_lund_zs[s_evt:events], all_lund_kts[s_evt:events], all_lund_drs[s_evt:events], parent1[s_evt:events], parent2[s_evt:events], labels[s_evt:events])
-
+    dataset = torch.load( path_to_file)
 
 
     ## define architecture
     batch_size = config['architecture']['batch_size']
     test_size = config['architecture']['test_size']
 
-
     dataset= shuffle(dataset,random_state=42)
     train_ds, validation_ds = train_test_split(dataset, test_size = test_size, random_state = 144)
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(validation_ds, batch_size=batch_size, shuffle=False)
 
-    delta_t_fileax = time.time() - t_start
-    print("Splitted datasets in {:.4f} seconds.".format(delta_t_fileax))
-
 
     print ("train dataset size:", len(train_ds))
     print ("validation dataset size:", len(validation_ds))
 
-    deg = torch.zeros(10, dtype=torch.long)
+    deg = torch.zeros(100, dtype=torch.long)
     for data in dataset:
         d = degree(data.edge_index[1], num_nodes=data.num_nodes, dtype=torch.long)
         deg += torch.bincount(d, minlength=deg.numel())
@@ -134,7 +93,10 @@ def main():
 
     #device = torch.device('cpu')
     device = torch.device('cuda') # Usually gpu 4 worked best, it had the most memory available
+    
+    #model = torch.nn.DataParallel(model)
     model.to(device)
+    
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     optimizer2 = torch.optim.Adam(model.parameters(), lr=4*learning_rate)
     optimizer3 = torch.optim.Adam(model.parameters(), lr=10*learning_rate)
@@ -171,3 +133,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
