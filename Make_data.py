@@ -66,11 +66,11 @@ def main():
                 continue
             if dsids_test[0] == 364702 : # don't lose time with jets that not pass pt cut
                 continue
-            if dsids_test[0] == 801859 : # don't keep W jets (if you are doing top tagging)
-                print("W file omitted")
-                continue            
-            #if dsids_test[0] == 801661 : # don't keep top jets (if you are doing W tagging)
-            #    continue 
+            # if dsids_test[0] == 801859 : # don't keep W jets (if you are doing top tagging)
+            #     print("W file omitted")
+            #     continue            
+            if dsids_test[0] == 801661 : # don't keep top jets (if you are doing W tagging)
+               continue 
             dsids = ak.to_numpy(ak.flatten(tree["LRJ_truthLabel"].array(library="ak")) )
 
             print("length dataset:", len(dataset), " file number:", file_number)

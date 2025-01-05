@@ -1,8 +1,10 @@
 data:
   #path_to_trainfiles: "/data/ravinascos/Lund_Plane_2024_graphs/TRAIN_DUMMY_01QCD_05Z/*.root" #TRAIN_DUMMY_fewEvents # TRAIN_DUMMY_01QCD_05Z
-  path_to_trainfiles: '/data/ravinascos/Lund_Plane_2024_graphs/TRAIN_DUMMY_02QCD_1Z/*.root'
+  # path_to_trainfiles: '/data/ravinascos/Lund_Plane_2024_graphs/TRAIN_DUMMY_02QCD_1Z/*.root'
+  path_to_trainfiles: '/eos/home-t/tmlinare/Lund/jetetmiss/JETMDataMC/jpierre/run/submitDir-2024-12-17-1734-0b3d flat mass W local (first success)/data-ANALYSIS/*.root'
   #path_to_save: "/home/ravinascos/LundNet/Jad_git/lundtoptagger/Models/"
-  path_to_save: "/data/ravinascos/LundNet/2024_graphs/"
+  # path_to_save: "/data/ravinascos/LundNet/2024_graphs/"
+  path_to_save: "/eos/home-t/tmlinare/Lund/Lund_tagging/lundtoptagger_data/"
   model_name: "TEST_"
   #"LundNet_R22_TRAIN_01QCD_05Z_Primary_FIX_ExtraNode_kt_.0"
 # LundNet_R22_TRAIN_01QCD_05Z_Primary_ExtraNode_NormalSignalWeights

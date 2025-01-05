@@ -29,7 +29,8 @@ from ..GNN_model_weight.models import mdn_loss, mdn_loss_new
 
 ## for top tagging:
 # weights_file = uproot.open("/data/jmsardain/LJPTagger/FullSplittings/SplitForTopTagger/flat_weights.root")
-weights_file = uproot.open("/data/jmsardain/LJPTagger/FullSplittings/SplitForTopTagger/5_Signal_and_BKG_cutTruth350/flat_weights.root")
+# weights_file = uproot.open("/data/jmsardain/LJPTagger/FullSplittings/SplitForTopTagger/5_Signal_and_BKG_cutTruth350/flat_weights.root")
+weights_file = uproot.open("/eos/home-t/tmlinare/Lund/Lund_tagging/ljptagger/flat_weights.root")
 
 flatweights_bg = weights_file["bg_inv"].to_numpy()
 flatweights_sig = weights_file["h_sig_inv"].to_numpy()
@@ -56,8 +57,8 @@ def GetPtWeight( dsid , pt, SF):
 def GetPtWeight_2( dsid , pt, SF):
 
     ## PT histograms of all qcd and top jets in dataset
-    filename1 = "/data/bcifuentes/histograms/qcd.root"
-    filename2 = "/data/bcifuentes/histograms/top.root"
+    filename1 = "/eos/home-t/tmlinare/Lund/Lund_tagging/lundtoptagger/qcd.root"
+    filename2 = "/eos/home-t/tmlinare/Lund/Lund_tagging/lundtoptagger/top.root"
     weights_file1 = uproot.open(filename1)
     flatweights_bg = weights_file1["pt"].to_numpy()
     weights_file2 = uproot.open(filename2)
