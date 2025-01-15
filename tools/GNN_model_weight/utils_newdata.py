@@ -128,7 +128,7 @@ def to_categorical(y, num_classes=None, dtype='float32'):
 
 
 #def create_train_dataset_fulld_new_Ntrk_pt_weight_file(graphs, z, k, d, edge1, edge2, weight, label, Ntracks, jet_pts, jet_ms, kT_selection):
-def create_train_dataset_fulld_new_Ntrk_pt_weight_file(graphs, z, k, d, edge1, edge2, weight, label, Ntracks, jet_pts, jet_ms, kT_selection, primary_Lund_only_one_arr):
+def create_train_dataset_fulld_new_Ntrk_pt_weight_file(graphs, z, k, d, edge1, edge2, weight, label, Ntracks, jet_pts, jet_ms, kT_selection, primary_Lund_only_one_arr, signal_jet_truth_label):
 
     test_bool = 1
     buildID_from_graphs = 0
@@ -149,13 +149,16 @@ def create_train_dataset_fulld_new_Ntrk_pt_weight_file(graphs, z, k, d, edge1, e
         if len(z[i])<3: 
             continue
         #print(label[i])
-        if (label[i]!=1) and (label[i]!=10) :
+        # skip jets which are not signal (1 for top and 2 for W) or background (10)
+        if (label[i]!=signal_jet_truth_label) and (label[i]!=10):
             continue
 
         # label signal as 1 and background as 0
         label_out = label[i] # label_np
-        if label[i]== 10:
+        if label[i] == 10:
             label_out = 0
+        if label[i] == signal_jet_truth_label:
+            label_out = 1
 
         if jet_pts[i] > 3200: continue
         if jet_pts[i] < 350: continue # . ./run.txt

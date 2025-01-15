@@ -100,7 +100,13 @@ def main():
             kT_selection = config['architecture']['kT_cut']
 
             #dataset = create_train_dataset_fulld_new_Ntrk_pt_weight_file( dataset , all_lund_zs, all_lund_kts, all_lund_drs, parent1, parent2, flat_weights, labels ,N_tracks, jet_pts, jet_ms, kT_selection)
-            dataset = create_train_dataset_fulld_new_Ntrk_pt_weight_file( dataset , all_lund_zs, all_lund_kts, all_lund_drs, parent1, parent2, flat_weights, labels ,N_tracks, jet_pts, jet_ms, kT_selection, primary_Lund_only_one_arr)
+            dataset = create_train_dataset_fulld_new_Ntrk_pt_weight_file(
+                dataset, all_lund_zs, all_lund_kts, all_lund_drs,
+                parent1, parent2, flat_weights, labels,
+                N_tracks, jet_pts, jet_ms, kT_selection,
+                primary_Lund_only_one_arr,
+                config["data"]["signal_jet_truth_label"]
+            )
 
             gc.collect()
 
