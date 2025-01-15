@@ -73,7 +73,7 @@ def main():
                continue 
             dsids = ak.to_numpy(ak.flatten(tree["LRJ_truthLabel"].array(library="ak")) )
 
-            print("length dataset:", len(dataset), " file number:", file_number)
+            print("length dataset:", len(dataset), " file number:", file_number)         # FIXME: this is the length of the dataset from the previous file, not the current one
             parent1 = ak.flatten(tree["jetLundIDParent1"].array(library="ak")) 
             parent2 = ak.flatten(tree["jetLundIDParent2"].array(library="ak")) 
             #print(parent1[0])

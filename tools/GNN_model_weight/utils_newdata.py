@@ -78,18 +78,18 @@ def GetPtWeight_2( dsid , pt, SF):
     
     ## it's time to calcuate the 1/hist
     for i in range (0,lenght_bkg):
-    	if flatweights_bg[0][i]==0:
-    		Inv_hist_bg.append(0)
-    		continue
-    	else:
-    		Inv_hist_bg.append(np.sum(flatweights_bg[0]) / (lenght_bkg * flatweights_bg[0][i]))
-    		
+        if flatweights_bg[0][i]==0:
+            Inv_hist_bg.append(0)
+            continue
+        else:
+            Inv_hist_bg.append(np.sum(flatweights_bg[0]) / (lenght_bkg * flatweights_bg[0][i]))
+            
     for i in range (0,lenght_sig):
-    	if flatweights_sig[0][i]==0:
-    		Inv_hist_sig.append(0)
-    		continue
-    	else:
-    		Inv_hist_sig.append(np.sum(flatweights_sig[0]) / (lenght_sig * flatweights_sig[0][i]))
+        if flatweights_sig[0][i]==0:
+            Inv_hist_sig.append(0)
+            continue
+        else:
+            Inv_hist_sig.append(np.sum(flatweights_sig[0]) / (lenght_sig * flatweights_sig[0][i]))
         
     for i in range ( 0,len(dsid) ):
         pt_bin = int( ((pt[i]-100)/3000)*lenght_sig )
@@ -134,6 +134,8 @@ def create_train_dataset_fulld_new_Ntrk_pt_weight_file(graphs, z, k, d, edge1, e
     buildID_from_graphs = 0
     Primary_Lund_Plane = 0
     extra_node = 0
+
+    # loop over jets
     for i in range(len(z)):  
         '''
         label_np = ak.to_numpy(label[i])
@@ -143,11 +145,14 @@ def create_train_dataset_fulld_new_Ntrk_pt_weight_file(graphs, z, k, d, edge1, e
         jet_pts_np = jet_pts_np.astype(float)
         jet_ms_np = jet_ms_np.astype(float)
         '''
+        # skip jets with less than 3 splittings
         if len(z[i])<3: 
             continue
         #print(label[i])
         if (label[i]!=1) and (label[i]!=10) :
             continue
+
+        # label signal as 1 and background as 0
         label_out = label[i] # label_np
         if label[i]== 10:
             label_out = 0
