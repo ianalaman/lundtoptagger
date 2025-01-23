@@ -1,4 +1,4 @@
-signal: W  # W or top, flag to choose one of the configurations below
+signal: top  # W or top, flag to choose one of the configurations below
 
 top:
   # weights_file: "/data/jmsardain/LJPTagger/FullSplittings/SplitForTopTagger/flat_weights.root"
