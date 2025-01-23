@@ -45,7 +45,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     config_file = args.config
     config = load_yaml(config_file)
-    config_signal = load_yaml("config_signal.yaml")
+    config_signal = load_yaml("configs/config_signal.yaml") # TODO: make this an optional argument, but then the same file needs to be used in utils_newdata.py
     signal = config_signal["signal"]
 
     path_to_test_file = config['data']['path_to_test_file']

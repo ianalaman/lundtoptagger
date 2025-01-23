@@ -36,7 +36,7 @@ def main():
     args = parser.parse_args()
     config_file = args.config
     config = load_yaml(config_file)
-    config_signal = load_yaml("config_signal.yaml")
+    config_signal = load_yaml("configs/config_signal.yaml") # TODO: make this an optional argument, but then the same file needs to be used in utils_newdata.py
     signal = config_signal["signal"]
 
     path_to_file = config['data']['path_to_trainfiles']
@@ -67,7 +67,7 @@ def main():
 
             dsids = ak.to_numpy(ak.flatten(tree["LRJ_truthLabel"].array(library="ak")) )
 
-            print("length dataset:", len(dataset), " file number:", file_number)         # FIXME: this is the length of the dataset from the previous file, not the current one
+            print("length dataset:", len(dataset), " file number:", file_number)
             parent1 = ak.flatten(tree["jetLundIDParent1"].array(library="ak")) 
             parent2 = ak.flatten(tree["jetLundIDParent2"].array(library="ak")) 
             #print(parent1[0])

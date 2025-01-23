@@ -28,7 +28,7 @@ import pandas as pd
 from ..GNN_model_weight.models import mdn_loss, mdn_loss_new
 
 
-with open("config_signal.yaml") as f:
+with open("configs/config_signal.yaml") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 signal = config["signal"]
 weights_file = uproot.open(config[signal]["weights_file"])
@@ -58,8 +58,8 @@ def GetPtWeight( dsid , pt, SF):
 def GetPtWeight_2( dsid , pt, SF):
 
     ## PT histograms of all qcd and top jets in dataset
-    filename1 = config["signal"]["pt_hist_file_bkg"]
-    filename2 = config["signal"]["pt_hist_file_signal"]
+    filename1 = config[signal]["pt_hist_file_bkg"]
+    filename2 = config[signal]["pt_hist_file_signal"]
     weights_file1 = uproot.open(filename1)
     flatweights_bg = weights_file1["pt"].to_numpy()
     weights_file2 = uproot.open(filename2)
