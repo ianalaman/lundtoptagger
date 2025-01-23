@@ -2,7 +2,6 @@ data:
   path_to_test_file: "/data/ravinascos/Lund_Plane_2024_graphs/New_Samples/TEST_05qcd_1z/*.root"  
   path_to_outdir: "/data/ravinascos/LundNet/R_22_Top/TEST_NewData_05qcd_1z/"
   weights_file: ""
-  signal_jet_truth_label: 1   # 1 for top and 2 for W
   scale_factor: 1
   kT_cut: 0.5 ## indeed this is a cut in ln(kT)
 
