@@ -1,32 +1,13 @@
-import awkward
-import os.path as osp
 import os
-import glob
-import torch
-import awkward as ak
-import time
+
 import yaml
 import uproot
-import uproot3
+import awkward as ak
 import numpy as np
+import torch
 import torch.nn.functional as F
 import torch.nn as nn
-#from torch_geometric.datasets import MNISTSuperpixels
-from torch_geometric.data import DataListLoader, DataLoader
-import torch_geometric.transforms as T
-from torch_geometric.nn import SplineConv, global_mean_pool, DataParallel, EdgeConv, GATConv, GINConv, PNAConv
 from torch_geometric.data import Data
-import scipy.sparse as ss
-from datetime import datetime, timedelta
-from torch_geometric.utils import degree
-from scipy.stats import entropy
-import math
-import networkx as nx
-from sklearn.utils import shuffle
-from sklearn.model_selection import train_test_split
-import pandas as pd
-from ..GNN_model_weight.models import mdn_loss, mdn_loss_new
-
 
 with open("configs/config_signal.yaml") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
