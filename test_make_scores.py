@@ -258,7 +258,6 @@ if __name__ == "__main__":
 
         
         model.to(device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
         #Predict scores
         y_pred = get_scores(test_loader, model, device)

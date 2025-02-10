@@ -442,7 +442,6 @@ def create_train_dataset_fulld_new_Ntrk_pt_weight_file(graphs, z, k, d, edge1, e
         z_out = z_out.astype(float)
         k_out = k_out.astype(float)
         d_out = d_out.astype(float)
-        Ntrk = Ntrk.astype(float)
 
         #edge = torch.tensor(np.array([edge1[i], edge2[i]]) , dtype=torch.long)
         edge_ID1 = np.concatenate((index_count_out, selected_nodes))
