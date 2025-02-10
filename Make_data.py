@@ -14,8 +14,7 @@ from tools.GNN_model_weight.utils_newdata import *
 print("Libraries loaded!")
 
 def main():
-    
-    parser = argparse.ArgumentParser(description='Train with configurations')
+    parser = argparse.ArgumentParser(description='Prepare data for classifier input')
     add_arg = parser.add_argument
     add_arg('config', help="job configuration")
     args = parser.parse_args()
@@ -27,21 +26,17 @@ def main():
     path_to_file = config['data']['path_to_trainfiles']
     files = glob.glob(path_to_file)
 
-    jet_type = "Akt10UFOJet" #UFO jets
-    save_trained_model = True
     intreename = "AnalysisTree"
 
-    print("Training tagger on files", len(files))
+    print(f"Processing {len(files)} files")
     t_start = time.time()
 
-    file_number = 0
-    
     dataset = []
     primary_Lund_only_one_arr = []
-    
-    for file in files:
-        
-        print("Loading file",file)
+
+    for file_number, file in enumerate(files):
+        print("\nLoading file", file)
+
         with uproot.open(file) as infile:
             tree = infile[intreename]
             file_number += 1
@@ -55,8 +50,6 @@ def main():
             print("length dataset:", len(dataset), " file number:", file_number)
             parent1 = ak.flatten(tree["jetLundIDParent1"].array(library="ak")) 
             parent2 = ak.flatten(tree["jetLundIDParent2"].array(library="ak")) 
-            #print(parent1[0])
-            #print(parent2[0])
             jet_ms = ak.to_numpy(ak.flatten(tree["LRJ_mass"].array(library="ak")))
             all_lund_zs = ak.flatten(tree["jetLundZ"].array(library="ak")) 
             all_lund_kts = ak.flatten(tree["jetLundKt"].array(library="ak")) 
@@ -89,16 +82,15 @@ def main():
 
             gc.collect()
 
-    print("Dataset created!", " len():",len(dataset))
-    delta_t_fileax = time.time() - t_start
-    print("Created dataset in {:.4f} seconds.".format(delta_t_fileax))
+    print("\nDataset created! len():", len(dataset))
+    delta_t_fileax = timedelta(seconds = time.time() - t_start)
+    print(f"Time taken (hh:mm:ss): {delta_t_fileax}")
 
     path_to_save = config['data']['path_to_save']
-    output_path_graphs = path_to_save + "/graphs_NewDataset_"
+    output_path_graphs = os.path.join(path_to_save, "graphs_NewDataset_" + config['data']['model_name'])
 
-    torch.save(dataset, output_path_graphs + config['data']['model_name'])
-
-    return
+    torch.save(dataset, output_path_graphs)
+    print("Dataset saved to:", output_path_graphs)
 
 
 if __name__ == "__main__":

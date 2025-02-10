@@ -27,13 +27,14 @@ def main():
 
     print("dataset used:", path_to_file)
 
-    save_trained_model = True
+    dataset = torch.load(path_to_file)
 
-    
-    #output_path_graphs = "data/graphs_NewDataset_"
-
-    dataset = torch.load( path_to_file)
-
+    # check the number of signal and background jets
+    labels = [data.y for data in dataset]
+    num_signal = labels.count(1)
+    num_background = labels.count(0)
+    print("Signal count:", num_signal)
+    print("Background count:", num_background)
 
     ## define architecture
     batch_size = config['architecture']['batch_size']
@@ -70,10 +71,9 @@ def main():
     if choose_model == "PNANet":
         model = PNANet()
 
-    flag = config['retrain']['flag']
     path_to_ckpt = config['retrain']['path_to_ckpt']
 
-    if flag==True:
+    if config['retrain']['flag']:
         path = path_to_ckpt
         model.load_state_dict(torch.load(path))
 
