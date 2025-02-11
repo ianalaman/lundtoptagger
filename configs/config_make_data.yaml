@@ -7,6 +7,7 @@
 # path_to_trainfiles: '/eos/home-t/tmlinare/Lund/jetetmiss/JETMDataMC/jpierre/run/submitDir-2025-01-17-1314-99e4 W files 1-2 (not flat mass)/data-ANALYSIS/mc20_13TeV.801859.Py8EG_A14NNPDF23LO_WprimeWZ_flatpT.deriv.DAOD_JETM2.e8482_s3681_r13145_p5548_files_1-2.root'
 # path_to_trainfiles: '/eos/home-t/tmlinare/Lund/jetetmiss/JETMDataMC/jpierre/run/submitDir-2025-01-17-1507-b394 W files 3-4 (not flat mass)/data-ANALYSIS/mc20_13TeV.801859.Py8EG_A14NNPDF23LO_WprimeWZ_flatpT.deriv.DAOD_JETM2.e8482_s3681_r13145_p5548_files_3-4.root'
 path_to_trainfiles: '/eos/home-t/tmlinare/Lund/Lund_tagging/lundtoptagger_data/QCD_sample/QCD_2percent4_test.root'
+n_files: null   # choose a small number of files in case you don't want to do full training; set to null to use all files
 #path_to_save: "/home/ravinascos/LundNet/Jad_git/lundtoptagger/Models/"
 # path_to_save: "/data/ravinascos/LundNet/2024_graphs/"
 out_dir: "/eos/home-t/tmlinare/Lund/Lund_tagging/lundtoptagger_data/"
