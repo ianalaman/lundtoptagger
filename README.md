@@ -1,19 +1,37 @@
 # lundtoptagger
 
-samples and flat weights are here : 
+## Setup
+
+On UChicago, samples and flat weights are here:  
+`/data/jmsardain/LJPTagger/FullSplittings/SplitForTopTagger/`
+
+The included setup script can set up the environment on several different systems:
+
+- a system with Red Hat Enterprise Linux 9, an NVIDIA driver which supports CUDA >= 11.8, and access to CVMFS, such as `lxplus-gpu`
+- a system with CentOS 7 and access to CVMFS (currently set up without CUDA)
+- UCL's `gpu02` server
+
+The script will automatically figure out which of these systems it is running on and set up the environment accordingly; just do
+
+```bash
+source setup.sh
 ```
-/data/jmsardain/LJPTagger/FullSplittings/SplitForTopTagger/ 
+
+On UChicago, do
+
+```bash
+source /data/jmsardain/LJPTagger/JetTagging/miniconda/bin/activate
+conda activate rootenv
 ```
+
+## Training and testing
 
 For the training, the main changes one should do are in the configuration file: configs/config_class_train_top.yaml .
 In this file you will define the learning rate, batch size, the input files, the model to use, the repo to save your ckpts. 
 
-To run the training: 
-```
-## if you are not working on UChicago, do not do the first 2 lines
-source /data/jmsardain/LJPTagger/JetTagging/miniconda/bin/activate
-conda activate rootenv
+To run the training:
 
+```bash
 python weight_class_train.py configs/config_class_train_top.yaml
 ```
 
