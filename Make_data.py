@@ -41,40 +41,30 @@ def main():
             tree = infile[intreename]
             file_number += 1
             
-            dsids_test = tree["dsid"].array(library="np")
-            if dsids_test[0] in config_signal[signal]["skip_dsids"]: # don't lose time with jets that don't pass pt cut or wrong signal sample
+            dsid_test = tree["dsid"].array(library="np")[0]      # check the first DSID, they should all be the same
+            if dsid_test in config_signal[signal]["skip_dsids"]: # don't lose time with jets that don't pass pt cut or wrong signal sample
                 continue
 
-            dsids = ak.to_numpy(ak.flatten(tree["LRJ_truthLabel"].array(library="ak")) )
+            truth_labels = ak.to_numpy(ak.flatten(tree["LRJ_truthLabel"].array(library="ak")))
 
             print("length dataset:", len(dataset), " file number:", file_number)
-            parent1 = ak.flatten(tree["jetLundIDParent1"].array(library="ak")) 
-            parent2 = ak.flatten(tree["jetLundIDParent2"].array(library="ak")) 
+            parent1 = ak.flatten(tree["jetLundIDParent1"].array(library="ak"))
+            parent2 = ak.flatten(tree["jetLundIDParent2"].array(library="ak"))
             jet_ms = ak.to_numpy(ak.flatten(tree["LRJ_mass"].array(library="ak")))
-            all_lund_zs = ak.flatten(tree["jetLundZ"].array(library="ak")) 
-            all_lund_kts = ak.flatten(tree["jetLundKt"].array(library="ak")) 
-            all_lund_drs = ak.flatten(tree["jetLundDeltaR"].array(library="ak")) 
-            N_tracks = ak.to_numpy(ak.flatten(tree["LRJ_Nconst_Charged"].array(library="ak")) )
+            jet_pts = ak.to_numpy(ak.flatten(tree["LRJ_pt"].array(library="ak")))
+            all_lund_zs = ak.flatten(tree["jetLundZ"].array(library="ak"))
+            all_lund_kts = ak.flatten(tree["jetLundKt"].array(library="ak"))
+            all_lund_drs = ak.flatten(tree["jetLundDeltaR"].array(library="ak"))
+            N_tracks = ak.to_numpy(ak.flatten(tree["LRJ_Nconst_Charged"].array(library="ak")))
             #N_tracks = ak.to_numpy(ak.flatten(tree["LRJ_Ntrk500"].array(library="ak")) )
             #N_tracks = ak.to_numpy(ak.flatten(tree["LRJ_Nconst"].array(library="ak")) )
-            #print(N_tracks)
-            jet_pts = ak.to_numpy(ak.flatten(tree["LRJ_pt"].array(library="ak")) )
 
-            #parent1 = ak.to_numpy(parent1)
-            #parent2 = ak.to_numpy(parent2)
-            #all_lund_zs = ak.to_numpy(all_lund_zs)
-            #all_lund_kts = ak.to_numpy(all_lund_kts)
-            #all_lund_drs = ak.to_numpy(all_lund_drs)
-            
-            labels = dsids
-
-            flat_weights = GetPtWeight_2( dsids, jet_pts, 5)
+            flat_weights = GetPtWeight_2(truth_labels, jet_pts, 5)
             kT_selection = config['architecture']['kT_cut']
 
-            #dataset = create_train_dataset_fulld_new_Ntrk_pt_weight_file( dataset , all_lund_zs, all_lund_kts, all_lund_drs, parent1, parent2, flat_weights, labels ,N_tracks, jet_pts, jet_ms, kT_selection)
             dataset = create_train_dataset_fulld_new_Ntrk_pt_weight_file(
                 dataset, all_lund_zs, all_lund_kts, all_lund_drs,
-                parent1, parent2, flat_weights, labels,
+                parent1, parent2, flat_weights, truth_labels,
                 N_tracks, jet_pts, jet_ms, kT_selection,
                 primary_Lund_only_one_arr,
                 config_signal[signal]["signal_jet_truth_label"]

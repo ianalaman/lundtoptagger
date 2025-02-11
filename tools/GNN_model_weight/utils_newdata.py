@@ -36,7 +36,7 @@ def GetPtWeight( dsid , pt, SF):
             weight_out.append( (flatweights_sig[0][pt_bin])*1 )
     return np.array(weight_out)
 
-def GetPtWeight_2( dsid , pt, SF):
+def GetPtWeight_2(truth_labels, pts, SF):
 
     ## PT histograms of all qcd and top jets in dataset
     filename1 = config[signal]["pt_hist_file_bkg"]
@@ -72,19 +72,18 @@ def GetPtWeight_2( dsid , pt, SF):
             continue
         else:
             Inv_hist_sig.append(np.sum(flatweights_sig[0]) / (lenght_sig * flatweights_sig[0][i]))
-        
-    for i in range ( 0,len(dsid) ):
-        pt_bin = int( ((pt[i]-100)/3000)*lenght_sig )
+
+    for i in range(len(truth_labels)):
+        pt_bin = int( ((pts[i]-100)/3000)*lenght_sig )
         if pt_bin>=lenght_sig : # ==
             pt_bin = lenght_sig-1
-        if dsid[i] ==10:#< 370000 :
+        if truth_labels[i]==10: # background could also be identified by DSIS, which would be < 370000
             #print("pt[i] ->", pt[i])
             #print("bin_pt->", pt_bin)
             weight_out.append( (Inv_hist_bg[pt_bin])*1  )
-        if dsid[i] !=10: ##events with other values than 1 and 10 must be removed in data creation
+        if truth_labels[i]!=10: # this could also contain some non-signal jets which must be removed when creating the training dataset
             weight_out.append( (Inv_hist_sig[pt_bin]*scale_factor)*1 ) #*10**2 )
     return np.array(weight_out)
-
 
 
 def load_yaml(file_name):
