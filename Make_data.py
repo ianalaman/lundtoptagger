@@ -24,7 +24,7 @@ def main():
     signal = config_signal["signal"]
 
     path_to_file = config['data']['path_to_trainfiles']
-    files = glob.glob(path_to_file)
+    files = glob.glob(path_to_file)[:config['data']['n_files']]
 
     intreename = "AnalysisTree"
 
