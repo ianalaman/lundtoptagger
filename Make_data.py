@@ -40,11 +40,11 @@ def main():
         with uproot.open(file) as infile:
             tree = infile[intreename]
 
-            dsids_test = tree["dsid"].array(library="np")
-            if dsids_test[0] in config_signal[signal]["skip_dsids"]: # don't lose time with jets that don't pass pt cut or wrong signal sample
+            dsid_test = tree["dsid"].array(library="np")[0]      # check the first DSID, they should all be the same
+            if dsid_test in config_signal[signal]["skip_dsids"]: # don't lose time with jets that don't pass pt cut or wrong signal sample
                 continue
 
-            dsids = ak.flatten(tree["LRJ_truthLabel"].array(library="ak"))
+            truth_labels = ak.flatten(tree["LRJ_truthLabel"].array(library="ak"))
 
             print("length dataset:", len(dataset), " file number:", file_number)
             parent1 = ak.flatten(tree["jetLundIDParent1"].array(library="ak"))
@@ -57,23 +57,13 @@ def main():
             N_tracks = ak.flatten(tree["LRJ_Nconst_Charged"].array(library="ak"))
             # N_tracks = ak.flatten(tree["LRJ_Ntrk500"].array(library="ak"))
             # N_tracks = ak.flatten(tree["LRJ_Nconst"].array(library="ak"))
-            #print(N_tracks)
 
-            #parent1 = ak.to_numpy(parent1)
-            #parent2 = ak.to_numpy(parent2)
-            #all_lund_zs = ak.to_numpy(all_lund_zs)
-            #all_lund_kts = ak.to_numpy(all_lund_kts)
-            #all_lund_drs = ak.to_numpy(all_lund_drs)
-            
-            labels = dsids
-
-            flat_weights = GetPtWeight_2( dsids, jet_pts, 5)
+            flat_weights = GetPtWeight_2(truth_labels, jet_pts, 5)
             kT_selection = config["kT_cut"]
 
-            #dataset = create_train_dataset_fulld_new_Ntrk_pt_weight_file( dataset , all_lund_zs, all_lund_kts, all_lund_drs, parent1, parent2, flat_weights, labels ,N_tracks, jet_pts, jet_ms, kT_selection)
             dataset = create_train_dataset_fulld_new_Ntrk_pt_weight_file(
                 dataset, all_lund_zs, all_lund_kts, all_lund_drs,
-                parent1, parent2, flat_weights, labels,
+                parent1, parent2, flat_weights, truth_labels,
                 N_tracks, jet_pts, jet_ms, kT_selection,
                 primary_Lund_only_one_arr,
                 config_signal[signal]["signal_jet_truth_label"]
