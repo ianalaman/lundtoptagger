@@ -29,6 +29,10 @@ def main():
 
     dataset = torch.load(path_to_file)
 
+    for jet in dataset:
+        if jet.mass <= 50:
+            dataset.remove(jet)
+
     # check the number of signal and background jets
     labels = [data.y for data in dataset]
     num_signal = labels.count(1)
