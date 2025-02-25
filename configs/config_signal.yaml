@@ -22,3 +22,14 @@ W:
   - 364701  # don't lose time with jets that don't pass pt cut
   - 364702  # don't lose time with jets that don't pass pt cut
   - 801661  # don't keep top jets
+
+Z:
+  weights_file: "/Users/zhangzeyi/Desktop/group project/lundtoptagger/flat_weights.root"
+  pt_hist_file_bkg: "/Users/zhangzeyi/Desktop/group project/lundtoptagger/qcd.root"
+  pt_hist_file_signal: "/Users/zhangzeyi/Desktop/group project/lundtoptagger/top.root"
+  signal_jet_truth_label: 5
+  skip_dsids:
+  - 364700  # don't lose time with jets that don't pass pt cut
+  - 364701  # don't lose time with jets that don't pass pt cut
+  - 364702  # don't lose time with jets that don't pass pt cut
+  - 801661  # don't keep top jets
