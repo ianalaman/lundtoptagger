@@ -113,6 +113,7 @@ def main():
     train_acc = []
     val_acc = []
 
+    os.makedirs(path_to_save)
     metrics_filename = os.path.join(path_to_save, f"losses_{model_name}{datetime.now().strftime("%d%m-%H%M")}.txt")
 
     for epoch in range(n_epochs):
