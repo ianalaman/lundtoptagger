@@ -27,27 +27,36 @@ def main():
 
     ln_kT_cut = args['ln_kT_cut'] if args['ln_kT_cut'] is not None else config['data']['ln_kT_cut']
     path_to_file = config['data']['path_to_trainfiles']
+    flip_y_vals = config['data']['flip_y'] # [False, True, False]
 
     dataset = []
     if isinstance(path_to_file, str):
         # path_to_file can be a list of file paths or a single path
         # if it is a single path, convert it to a list
         path_to_file = [path_to_file]
-    for file_path in path_to_file:
+    for file_path, flip_y in zip(path_to_file, flip_y_vals):
         file_path = file_path.format(ln_kT_cut=ln_kT_cut)
         print("Loading file", file_path)
-        dataset += torch.load(file_path)
+        dataset_i = torch.load(file_path)
+        if flip_y:
+            for jet in dataset_i:
+                jet.y = 1 - jet.y
+        dataset += dataset_i
+        # torch.load here loads a list of Data objects
+        # and each Data object is a graph representation of one jet
+    # dataset is now
+    # [grap1fromlist1, graph2fromlist1, graph1fromlist2, graph2fromlist2, ...]
 
-    for graph in dataset:
-        if hasattr(graph, 'pt'):
-            delattr(graph, 'pt')
+    for jet in dataset:
+        if hasattr(jet, 'pt'):
+            delattr(jet, 'pt')
 
     for jet in dataset:
         if jet.mass <= 50:
             dataset.remove(jet)
 
     # check the number of signal and background jets
-    labels = [data.y for data in dataset]
+    labels = [jet.y for jet in dataset] # label are something like this: [0, 1, 1, 0]
     num_signal = labels.count(1)
     num_background = labels.count(0)
     print("Signal count:", num_signal)
